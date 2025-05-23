@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor Agent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .chat-container {
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+        .question-card {
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .answer-content {
+            display: none;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 0 0 10px 10px;
+            white-space: pre-wrap;
+        }
+        .answer-content.show {
+            display: block;
+        }
+        .timestamp {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        .edit-form {
+            display: none;
+            margin-top: 0.5rem;
+        }
+        .edit-form.show {
+            display: block;
+        }
+        .subject-badge {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            margin-left: 0.5rem;
+        }
+        .biology-badge {
+            background-color: #28a745;
+            color: white;
+        }
+        .other-badge {
+            background-color: #6c757d;
+            color: white;
+        }
+        .diagram {
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+            border: 1px solid #dee2e6;
+        }
+        .physics-badge {
+            background-color: #007bff;
+            color: white;
+        }
+        .math-badge {
+            background-color: #6f42c1;
+            color: white;
+        }
+        .chemistry-badge {
+            background-color: #fd7e14;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container chat-container">
+        <h1 class="text-center mb-4">
+            <i class="fas fa-graduation-cap"></i> AI Tutor Agent
+        </h1>
+        <div class="card">
+            <div class="card-body">
+                <form id="questionForm" class="mb-4">
+                    <div class="input-group">
+                        <input type="text" id="questionInput" class="form-control" placeholder="Ask a question about Math, Physics, Chemistry, or Biology...">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Ask
+                        </button>
+                    </div>
+                </form>
+
+                <div id="conversations">
+                    {% for conv in conversations %}
+                    <div class="question-card card" data-id="{{ conv.id }}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="card-title d-inline">{{ conv.query }}</h5>
+                                    <span class="subject-badge {{ conv.subject.lower() }}-badge">
+                                        {{ conv.subject }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-primary edit-btn">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info toggle-answer-btn">
+                                        <i class="fas fa-chevron-{{ 'up' if loop.first else 'down' }}"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="timestamp">{{ conv.timestamp }}</div>
+                            
+                            <div class="edit-form">
+                                <div class="input-group mt-2">
+                                    <input type="text" class="form-control edit-input" value="{{ conv.query }}">
+                                    <button class="btn btn-success save-edit-btn">
+                                        <i class="fas fa-save"></i> Save
+                                    </button>
+                                    <button class="btn btn-secondary cancel-edit-btn">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="answer-content {{ 'show' if loop.first else '' }}">
+                                {{ conv.answer | safe }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Function to handle question submission
+        async function submitQuestion() {
+            const input = document.getElementById('questionInput');
+            const query = input.value.trim();
+            
+            if (!query) return;
+
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query }),
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    updateConversations(data.conversations);
+                    input.value = '';
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while processing your question.');
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('questionForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            submitQuestion();
+        });
+
+        // Handle enter key press
+        document.getElementById('questionInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                submitQuestion();
+            }
+        });
+
+        function updateConversations(conversations) {
+            const container = document.getElementById('conversations');
+            container.innerHTML = conversations.map((conv, index) => `
+                <div class="question-card card" data-id="${conv.id}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="card-title d-inline">${conv.query}</h5>
+                                <span class="subject-badge ${conv.subject.toLowerCase()}-badge">
+                                    ${conv.subject}
+                                </span>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-outline-primary edit-btn">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-info toggle-answer-btn">
+                                    <i class="fas fa-chevron-${index === 0 ? 'up' : 'down'}"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="timestamp">${conv.timestamp}</div>
+                        
+                        <div class="edit-form">
+                            <div class="input-group mt-2">
+                                <input type="text" class="form-control edit-input" value="${conv.query}">
+                                <button class="btn btn-success save-edit-btn">
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                                <button class="btn btn-secondary cancel-edit-btn">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="answer-content ${index === 0 ? 'show' : ''}">
+                            ${conv.answer}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            attachEventListeners();
+        }
+
+        function attachEventListeners() {
+            // Toggle answer visibility
+            document.querySelectorAll('.toggle-answer-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const card = e.target.closest('.question-card');
+                    const answerContent = card.querySelector('.answer-content');
+                    const icon = btn.querySelector('i');
+                    
+                    answerContent.classList.toggle('show');
+                    icon.classList.toggle('fa-chevron-down');
+                    icon.classList.toggle('fa-chevron-up');
+                });
+            });
+
+            // Edit question
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const card = e.target.closest('.question-card');
+                    const editForm = card.querySelector('.edit-form');
+                    editForm.classList.toggle('show');
+                });
+            });
+
+            // Save edited question
+            document.querySelectorAll('.save-edit-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const card = e.target.closest('.question-card');
+                    const id = card.dataset.id;
+                    const newQuery = card.querySelector('.edit-input').value.trim();
+                    
+                    if (!newQuery) return;
+
+                    try {
+                        const response = await fetch('/edit', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ id: parseInt(id), query: newQuery }),
+                        });
+                        
+                        const data = await response.json();
+                        if (response.ok) {
+                            updateConversations(data.conversations);
+                        } else {
+                            alert(data.error);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('An error occurred while editing the question.');
+                    }
+                });
+            });
+
+            // Cancel edit
+            document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const card = e.target.closest('.question-card');
+                    const editForm = card.querySelector('.edit-form');
+                    editForm.classList.remove('show');
+                });
+            });
+        }
+
+        // Initial event listener attachment
+        attachEventListeners();
+    </script>
+</body>
+</html> 

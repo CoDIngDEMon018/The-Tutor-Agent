@@ -1,0 +1,28 @@
+# Gemini SDK
+google-generativeai==0.3.0
+
+# HTTP client (for other needs)
+requests==2.31.0
+
+# Math solving
+sympy==1.12
+
+# Web interface
+flask==2.3.0
+flask-session==0.5.0
+
+# Env var loader
+python-dotenv==1.0.0
+
+# Optional: type hints
+typing_extensions==4.7.0
+
+# Gunicorn for production
+gunicorn==21.2.0
+
+# Diagram generation
+matplotlib==3.8.2
+
+# Pydantic and dependencies
+pydantic==1.10.13
+# pydantic-core==1.10.13
