@@ -1,31 +1,33 @@
 # AI Tutor Agent
 
-An interactive multi-agent tutoring system powered by Google Gemini API, built with Streamlit. It routes user queries to specialized sub-agents (Math, Physics, Chemistry) which utilize tools and LLM integration.
+An interactive multi-agent tutoring system powered by Google Gemini API, built with Flask. It routes user queries to specialized sub-agents (Math, Physics, Chemistry, Biology) which utilize tools and LLM integration.
 
 ---
 
 ## 🏠 Project Overview
 
-**AI Tutor Agent** helps students ask questions in Math, Physics, and Chemistry. It features:
+**AI Tutor Agent** helps students ask questions in Math, Physics, Chemistry, and Biology. It features:
 
 * **TutorAgent**: orchestrator routing queries based on subject.
 * **MathAgent**: solves arithmetic, algebra, calculus (uses SymPy and Gemini).
 * **PhysicsAgent**: answers physics questions (uses constant lookup and Gemini).
 * **ChemistryAgent**: answers chemistry queries (uses Gemini).
+* **BiologyAgent**: answers biology questions (uses terminology, diagrams, and Gemini).
 * **MemoryBuffer**: retains conversation context for follow-up questions.
-* **Streamlit UI**: web interface with session-state persistence.
+* **Flask Web UI**: modern, user-friendly web interface with session-based persistence and subject badges.
 
 ---
 
 ## 📁 Repository Structure
 
 ```
-ai-tutor/
+ai-tutor-agent-main/
 ├── agents/
 │   ├── tutor_agent.py
 │   ├── math_agent.py
 │   ├── physics_agent.py
-│   └── chemistry_agent.py
+│   ├── chemistry_agent.py
+│   └── biology_agent.py
 ├── tools/
 │   ├── calculator.py
 │   └── constants_lookup.py
@@ -33,9 +35,12 @@ ai-tutor/
 │   ├── classifier.py
 │   ├── memory.py
 │   └── llm.py
+├── templates/
+│   └── index.html
 ├── main.py
 ├── requirements.txt
 ├── .env
+├── .gitignore
 └── README.md
 ```
 
@@ -47,13 +52,16 @@ ai-tutor/
 
    ```bash
    git clone <your-github-url>
-   cd ai-tutor
+   cd ai-tutor-agent-main
    ```
 2. **Create virtual environment**
 
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate   # on Windows: venv\Scripts\activate
+   python -m venv venv
+   # On Windows:
+   venv\Scripts\activate
+   # On macOS/Linux:
+   source venv/bin/activate
    ```
 3. **Install dependencies**
 
@@ -70,10 +78,10 @@ ai-tutor/
 5. **Run the app**
 
    ```bash
-   streamlit run main.py
+   python main.py
    ```
 
-Open [http://localhost:8501](http://localhost:8501) in your browser and start asking questions!
+Open [http://localhost:5000](http://localhost:5000) in your browser and start asking questions!
 
 ---
 
@@ -84,15 +92,8 @@ Open [http://localhost:8501](http://localhost:8501) in your browser and start as
 1. Push to GitHub.
 2. Create a Railway project and link your GitHub repo.
 3. Set the environment variable `GEMINI_API_KEY` in Railway.
-4. Configure the start command: `streamlit run main.py`.
+4. The included `Procfile` will run the app with Gunicorn.
 5. Deploy and access the public URL.
-
-### Vercel (Alternative)
-
-1. Use `vercel` CLI or web dashboard.
-2. Add `STREAMLIT_SERVER_OPTION="server.enableCORS false"` in Environment Variables.
-3. Add `GEMINI_API_KEY`.
-4. Deployment will publish to `your-project.vercel.app`.
 
 ---
 
@@ -104,27 +105,38 @@ Open [http://localhost:8501](http://localhost:8501) in your browser and start as
 * **MathAgent**: uses `tools/calculator.py` (SymPy) and `utils/llm.py`.
 * **PhysicsAgent**: uses `tools/constants_lookup.py` and memory-based reminders.
 * **ChemistryAgent**: uses `utils/llm.py`.
+* **BiologyAgent**: uses terminology, diagrams, and Gemini LLM.
 
 ### Tools
 
 * **calculator.py**: robust math expression parser and solver.
-* **constants\_lookup.py**: dictionary of physics constants.
+* **constants_lookup.py**: dictionary of physics constants.
 
 ---
 
-## ⭐ Bonus Features
+## ⭐ Features
 
-* **MemoryBuffer** for conversational context (follow-ups & reminders).
-* **Implicit multiplication** and Unicode operator support (`×`, `÷`).
-* **Session state** persistence in Streamlit.
+* **Subject detection**: Every question is automatically labeled as Biology, Physics, Math, Chemistry, or Other.
+* **Color-coded badges**: Each subject has a unique badge color in the UI.
+* **Collapsible answers**: Click to expand/collapse answers for easy navigation.
+* **Edit previous questions**: Update your questions and get new answers instantly.
+* **Session-based history**: Your Q&A history is stored for the session.
+* **Modern Flask UI**: Responsive, user-friendly, and deployable anywhere.
 
 ---
 
 ## 🔧 Future Improvements
 
-* Add more sub-agents (Chemistry calculations, Coding agent).
+* Add more sub-agents (e.g., Coding agent).
 * Advanced tool integration (graphing, unit conversions).
 * User authentication and personalized sessions.
+* Enhanced diagram generation and interactive features.
+
+---
+
+## 📝 .gitignore
+
+A `.gitignore` is included to exclude virtual environments, `.env`, cache, and other common files from version control.
 
 ---
 
