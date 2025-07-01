@@ -2,10 +2,10 @@
 
 import os
 import google.generativeai as genai
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
 # Load & clean API key
-load_dotenv()
+load_dotenv(find_dotenv(), override=True)
 api_key = os.getenv("GEMINI_API_KEY", "").strip()
 genai.configure(api_key=api_key)
 
@@ -20,4 +20,5 @@ def generate_response(prompt: str) -> str:
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
+        print(f"Loaded API key: {repr(api_key)}")
         return f"LLM Error: {str(e)}"
